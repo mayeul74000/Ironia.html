@@ -8,7 +8,7 @@ const Anthropic = require('@anthropic-ai/sdk');
 const app = express();
 const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || 'dev_secret';
-const FREE_MESSAGES = parseInt(process.env.FREE_MESSAGES_PER_MONTH || '10');
+const FREE_MESSAGES = 10;
 const USERS = {};
 app.use(cors({ origin: '*', methods: ['GET', 'POST', 'OPTIONS'], allowedHeaders: ['Content-Type', 'Authorization'] }));
 app.use(express.json({ limit: '10kb' }));
