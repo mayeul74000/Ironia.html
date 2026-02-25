@@ -64,7 +64,7 @@ app.post('/coach/chat', authMiddleware, chatLimiter, async (req, res) => {
   if (!messages || !Array.isArray(messages)) return res.status(400).json({ error: 'Messages requis' });
   const cleanMessages = messages.slice(-10).map(m => ({ role: m.role === 'assistant' ? 'assistant' : 'user', content: String(m.content).substring(0, 2000) }));
   try {
-    const client = new Anthropic({ apiKey: ANTHROPIC_KEY });
+    const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
     const response = await client.messages.create({ model: 'claude-opus-4-6', max_tokens: 600, system: systemPrompt || 'Tu es IronCoach, expert musculation. Reponds en francais.', messages: cleanMessages });
     user.messagesThisMonth++;
     const messagesLeft = user.plan === 'premium' ? 999 : Math.max(0, FREE_MESSAGES - user.messagesThisMonth);
