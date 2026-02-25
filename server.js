@@ -71,5 +71,5 @@ app.post('/coach/chat', authMiddleware, chatLimiter, async (req, res) => {
     res.json({ text: response.content[0] ? response.content[0].text : '', messagesLeft });
   } catch (err) { res.status(500).json({ error: 'Erreur serveur.' }); }
 });
-app.get('/', (req, res) => { res.json({ status: 'ok', app: 'IronAI Backend', users: Object.keys(USERS).length }); });
-app.listen(PORT, () => { console.log('IronAI Backend running on port ' + PORT); });
+app.get('/', (req, res) => { res.json({ status: 'ok', app: 'IronAI Backend', users: Object.keys(USERS).
+app.listen(PORT, '0.0.0.0', () => { console.log('IronAI Backend running on port ' + PORT); });
