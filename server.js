@@ -3,19 +3,15 @@ const express = require('express');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const rateLimit = require('express-rate-limit');
 const Anthropic = require('@anthropic-ai/sdk');
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8080;
 const JWT_SECRET = 'IronAI_MonApp_Secret_2026_Perso';
 const FREE_MESSAGES = 10;
 const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
 const USERS = {};
 app.use(cors({ origin: '*', methods: ['GET', 'POST', 'OPTIONS'], allowedHeaders: ['Content-Type', 'Authorization'] }));
 app.use(express.json({ limit: '10kb' }));
-const globalLimiter = rateLimit({ windowMs: 900000, max: 100, validate: {xForwardedForHeader: false} });
-app.use(globalLimiter);
-const chatLimiter = rateLimit({ windowMs: 60000, max: 10, validate: {xForwardedForHeader: false} });
 function monthKey() { const d = new Date(); return d.getFullYear() + '-' + (d.getMonth() + 1); }
 function generateId() { return Math.random().toString(36).substring(2) + Date.now().toString(36); }
 function authMiddleware(req, res, next) {
@@ -61,7 +57,7 @@ app.get('/auth/me', authMiddleware, function(req, res) {
   const messagesLeft = user.plan === 'premium' ? 999 : Math.max(0, FREE_MESSAGES - user.messagesThisMonth);
   res.json({ email: user.email, prenom: user.prenom, plan: user.plan, messagesLeft: messagesLeft });
 });
-app.post('/coach/chat', authMiddleware, chatLimiter, async function(req, res) {
+app.post('/coach/chat', authMiddleware, async function(req, res) {
   const user = req.user;
   if (user.monthKey !== monthKey()) { user.messagesThisMonth = 0; user.monthKey = monthKey(); }
   if (user.plan === 'free' && user.messagesThisMonth >= FREE_MESSAGES) {
