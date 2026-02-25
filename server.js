@@ -8,10 +8,10 @@ const app = express();
 const PORT = process.env.PORT;
 const JWT_SECRET = 'IronAI_MonApp_Secret_2026_Perso';
 const FREE_MESSAGES = 10;
-const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
 const USERS = {};
 app.use(cors({ origin: '*', methods: ['GET', 'POST', 'OPTIONS'], allowedHeaders: ['Content-Type', 'Authorization'] }));
 app.use(express.json({ limit: '10kb' }));
+app.use(express.static('public'));
 function monthKey() { const d = new Date(); return d.getFullYear() + '-' + (d.getMonth() + 1); }
 function generateId() { return Math.random().toString(36).substring(2) + Date.now().toString(36); }
 function authMiddleware(req, res, next) {
@@ -23,9 +23,7 @@ function authMiddleware(req, res, next) {
     if (!user) return res.status(401).json({ error: 'Introuvable' });
     req.user = user;
     next();
-  } catch (e) {
-    return res.status(401).json({ error: 'Token invalide' });
-  }
+  } catch (e) { return res.status(401).json({ error: 'Token invalide' }); }
 }
 app.post('/auth/register', async function(req, res) {
   const email = req.body.email;
@@ -70,23 +68,17 @@ app.post('/coach/chat', authMiddleware, async function(req, res) {
     return { role: m.role === 'assistant' ? 'assistant' : 'user', content: String(m.content).substring(0, 2000) };
   });
   try {
-    const client = new Anthropic({ apiKey: ANTHROPIC_KEY });
-    const response = await client.messages.create({
-      model: 'claude-opus-4-6',
-      max_tokens: 600,
-      system: systemPrompt || 'Tu es IronCoach, expert musculation. Reponds en francais.',
-      messages: cleanMessages
-    });
+    const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+    const response = await client.messages.create({ model: 'claude-opus-4-6', max_tokens: 600, system: systemPrompt || 'Tu es IronCoach, expert musculation. Reponds en francais.', messages: cleanMessages });
     user.messagesThisMonth++;
     const messagesLeft = user.plan === 'premium' ? 999 : Math.max(0, FREE_MESSAGES - user.messagesThisMonth);
     res.json({ text: response.content[0] ? response.content[0].text : '', messagesLeft: messagesLeft });
-  } catch (err) {
-    res.status(500).json({ error: 'Erreur serveur.' });
-  }
+  } catch (err) { res.status(500).json({ error: 'Erreur serveur.' }); }
 });
-app.get('/', function(req, res) {
-  res.json({ status: 'ok', app: 'IronAI Backend', users: Object.keys(USERS).length });
-});
-app.listen(PORT, function() {
-  console.log('IronAI Backend running on port ' + PORT);
-});
+app.get('/health', function(req, res) { res.json({ status: 'ok', users: Object.keys(USERS).length }); });
+app.listen(PORT, function() { console.log('IronAI Backend running on port ' + PORT); });
+```
+
+Une fois les 2 fichiers commités → l'app sera accessible directement sur :
+```
+https://ironiahtml-production-3ef8.up.railway.app
