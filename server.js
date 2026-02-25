@@ -13,9 +13,9 @@ const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
 const USERS = {};
 app.use(cors({ origin: '*', methods: ['GET', 'POST', 'OPTIONS'], allowedHeaders: ['Content-Type', 'Authorization'] }));
 app.use(express.json({ limit: '10kb' }));
-const globalLimiter = rateLimit({ windowMs: 900000, max: 100 });
+const globalLimiter = rateLimit({ windowMs: 900000, max: 100, validate: {xForwardedForHeader: false} });
 app.use(globalLimiter);
-const chatLimiter = rateLimit({ windowMs: 60000, max: 10 });
+const chatLimiter = rateLimit({ windowMs: 60000, max: 10, validate: {xForwardedForHeader: false} });
 function monthKey() { const d = new Date(); return d.getFullYear() + '-' + (d.getMonth() + 1); }
 function generateId() { return Math.random().toString(36).substring(2) + Date.now().toString(36); }
 function authMiddleware(req, res, next) {
